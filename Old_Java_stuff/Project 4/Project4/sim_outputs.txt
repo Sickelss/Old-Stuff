@@ -1,0 +1,17 @@
+ ======End of Simulation Statistics====== 
+Total customers disappointed:500
+Average Queue Lengths:
+    Register 0: 0
+    Register 1: 0
+    Register 2: 0
+    Express Register 0: 0
+Average Wait Times:
+    Register 0: 6.231534164751064
+    Register 1: 4.3230506392033625
+    Register 2: 2.429886740325648
+    Register 0: 0.991120332486478
+Total Customers in each line:
+Register 0: 190
+Register 1: 129
+Register 2: 74
+Register 0: 107

@@ -1,0 +1,384 @@
+package com.example.animation;
+
+import com.example.animation.SpriteAnimated;
+
+import com.example.walking.R;
+
+import android.content.Context;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.util.Log;
+import android.view.MotionEvent;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
+import android.view.View;
+import java.util.Random;
+
+/**
+ * An instance of this class provides a <code>Surface</code>, the raw pixel color storage buffer,
+ * to use for drawing animated images. A standard Android component called the 
+ * <code>screen compositor</code> copies pixel color information directly from the Surface to the screen. 
+ * http://developer.android.com/reference/android/view/Surface.html
+ * <p>
+ * Each Android Activity uses one or more Android <code>View</code> instances to control drawing in
+ * rectangular regions of the screen. There is typically a <code>View</code> that covers the whole
+ * screen. A <code>SurfaceView</code> provides a dedicated drawing surface embedded inside of a 
+ * <code>View</code>. Each <code>SurfaceView</code> instance controls where it's corresponding 
+ * <code>Surface</code> is displayed on screen. The ThreadedAnimationSurfaceView uses an asynchronous
+ * thread to draw images into the <code>Surface</code>'s raw pixel color storage buffer from which
+ * Android copies pixel colors to the screen. The asynchronous thread ins necessary because drawing
+ * animation may be time consuming, and that time can not be consumed on teh main application thread
+ * without making the application unresponsive to user input.
+ */
+public class ThreadedAnimationSurfaceView extends SurfaceView  implements
+SurfaceHolder.Callback {
+
+	/**
+	 * Instances of the Java class, <code>Class</code> encapsulated the in-memory representation 
+	 * of a Java class. This representation serves as the starting point for querying class-related 
+	 * information, a process usually called "reflection". There are basically three types of Class 
+	 * instances: those representing real classes and interfaces, those representing primitive types, 
+	 * and those representing array classes. The TAG constant is initialized with a unique identifier
+	 * for the in-memory representation of this class.
+	 */
+	private static final String TAG = ThreadedAnimationSurfaceView.class.getSimpleName();
+	
+	Random random = new Random();
+	
+	private AnimationThread thread;  // The thread to perform drawing
+	private SpriteAnimated duke;	 // An animation
+	private SpriteAnimated cat;		 // An animation
+	private SpriteAnimated ninja;	 // An animation
+	private SpriteAnimated zombie;	 // An animation
+	private SpriteAnimated tank; // new animation
+	private SpriteAnimated zekrom;		//the black pokemon thing.
+	
+	private String avgFps; // the rate in Frames Per Second (FPS) to display animations
+	
+    /**
+    The <code>setAvgFps</code> sets the rate in Frames Per Second (FPS) to display animations
+
+    @param avgFps	The average number of frames per second to draw.
+    **/
+	public void setAvgFps(String avgFps) {
+		this.avgFps = avgFps;
+	}
+
+	/**
+	 * Class constructor specifying the <code>Context</code> containing global information 
+	 * about an application environment. 
+	 * 
+	 * @param context		<code>Context</code> is an abstract class whose 
+	 * 						implementation is provided by the Android system. 
+	 * 						It allows access to application-specific resources and 
+	 * 						classes. For instances of this class, the <code>context</code> 
+	 * 						should be an Android Activity.
+	 */
+	public ThreadedAnimationSurfaceView(Context context) {
+		super(context);
+		
+		// adding the callback (this) to the surface holder to intercept events
+		getHolder().addCallback(this);
+
+		duke = new SpriteAnimated(
+				BitmapFactory.decodeResource(getResources(), R.drawable.duke_spritesheet) 
+				, 10, 50	// initial position
+				, 10, 1, 0	// frames per row, frames per column, start frame
+				, 24, 10  	// FPS and number of frames in the animation
+				, false);
+		cat = new SpriteAnimated(
+				BitmapFactory.decodeResource(getResources(), R.drawable.runningcat) 
+				, 0, 200	// initial position
+				, 2, 4, 0	// frames per row, frames per column, start frame
+				, 24, 8	    // FPS and number of frames in the animation
+				, false);
+		ninja = new SpriteAnimated(
+				BitmapFactory.decodeResource(getResources(), R.drawable.ninja) 
+				, 200, 499	// initial position
+				, 8, 6, 0	// frames per row, frames per column, start frame
+				, 5, 48  	// FPS and number of frames in the animation
+				, true);
+		zombie = new SpriteAnimated(
+				BitmapFactory.decodeResource(getResources(), R.drawable.zombie2) 
+				, 250, 500	// initial position
+				, 4, 4, 0	// frames per row, frames per column, start frame
+				, 24, 16  	// FPS and number of frames in the animation
+				, true);
+		tank = new SpriteAnimated(
+				BitmapFactory.decodeResource(getResources(), R.drawable.tank) 
+				, 350, 600	// initial position
+				, 6, 1, 0	// frames per row, frames per column, start frame
+				, 5, 6  	// FPS and number of frames in the animation
+				, true);
+		zekrom = new SpriteAnimated(
+				BitmapFactory.decodeResource(getResources(), R.drawable.zekrom) 
+				, 1, 1	// initial position
+				, 11, 9, 0	// frames per row, frames per column, start frame
+				, 5, 11  	// FPS and number of frames in the animation
+				, true);
+		zekrom.setSpriteHeight(zekrom.getSpriteHeight()-7);		//bad sprite sheet, I did a quickfix here.
+		zekrom.setSpriteWidth(zekrom.getSpriteWidth()+1);
+		
+		// create the game loop thread
+		
+		thread = new AnimationThread(getHolder(), this);
+		
+		
+		//Become focusable to handle events
+		setFocusable(true);
+	}
+
+	/**
+	 * The the instance's asynchronous thread state.
+	 * 
+	 * @param running	Setting to true enables the thread to run. Setting to false
+	 * 					notifies the thread to stop running, but due to the asynchronous
+	 * 					nature of the thread, it may not stop running before this method
+	 * 					returns.
+	 */
+	public void setRunning(boolean running) {
+		thread.setRunning(running);
+	}
+
+	/**
+	 * Determine if the thread has stopped running.
+	 * 
+	 * @return true if and only if the instance's asynchronous thread has stopped running.
+	 * Call this after calling <code>setRunning(true)</code> to find out if the thread has
+	 * actually stopped running. 
+	 * 					
+	 */
+	public boolean getHasStopped() {
+		return thread.getHasStopped();
+	}
+
+	/**
+	 * This method is called automatically by the Android framework whenever the <code>Surface</code>
+	 * encapsulated by an instance of this class has changed format or size. 
+	 * 	
+	 * @param holder	The SurfaceHolder whose surface has changed.
+	 * @param format	The new PixelFormat of the surface.
+	 * @param width		The new width of the surface.
+	 * @param height	The new height of the surface.				
+	 */
+	@Override
+	public void surfaceChanged(SurfaceHolder holder, int format, int width,
+			int height) {
+	}
+
+	/**
+	 * This method is called automatically by the Android framework whenever the <code>Surface</code>
+	 * encapsulated by an instance of this class is created. 
+	 * 	
+	 * @param holder	The SurfaceHolder whose surface has changed.
+	 */
+	@Override
+	public void surfaceCreated(SurfaceHolder holder) {
+		// at this point the surface is created and
+		// we can safely start the game loop
+		thread.setRunning(true);
+		thread.start();
+	}
+
+	/**
+	 * This method is called automatically by the Android framework whenever the <code>Surface</code>
+	 * encapsulated by an instance of this class is destroyed. 
+	 * 	
+	 * @param holder	The SurfaceHolder whose surface has changed.
+	 */
+	@Override
+	public void surfaceDestroyed(SurfaceHolder holder) {
+		Log.d(TAG, "Surface is being destroyed");
+		// tell the thread to shut down and wait for it to finish
+		// this is a clean shutdown
+		
+		
+		// Loop until the asynchronous animation thread has terminated and its resources have
+		// been rejoined with the main thread.
+		boolean retry = true;
+		while (retry) {
+			try {
+				thread.join();
+				retry = false;
+			} catch (InterruptedException e) {
+				// try again shutting down the thread
+			}
+		}
+		Log.d(TAG, "Thread was shut down cleanly");
+	}
+	
+	/**
+	 * This method is called automatically by the Android framework whenever the <code>View</code>
+	 * receives a tuch input event. 
+	 * 	
+	 * @param event	The motion event.
+	 */
+	@Override
+	public boolean onTouchEvent(MotionEvent event) {
+		if (event.getAction() == MotionEvent.ACTION_DOWN) {
+			// handle touch
+		}
+		return true;
+	}
+
+	/**
+	 * Draw the current frame of each animation into the encapsulated <code>Surface</code> 
+	 * 	
+	 * @param canvas	The <code>Canvas</code> provides methods for drawing into a view
+	 * @throws InterruptedException 
+	 */
+	public void render(Canvas canvas) throws InterruptedException {
+		canvas.drawColor(Color.WHITE);
+		int py = canvas.getHeight();		//gets screen height
+		int px = canvas.getWidth();			//gets screen width
+		//duke.draw(canvas);
+		//cat.draw(canvas);
+		ninja.draw(canvas);
+		zekrom.draw(canvas);
+		//zombie.draw(canvas);
+		//tank.draw(canvas);
+		
+		animateNinja(py, px);
+		animateZekrom(py,px);
+		// display fps
+		displayFps(canvas, avgFps);
+	}
+
+	/**
+	 * This is the animation update method. It iterates through all the animation objects
+	 * and calls their respective update methods.
+	 */
+	public void update() {
+		//duke.update(System.currentTimeMillis());
+		//cat.update(System.currentTimeMillis());
+		ninja.update(System.currentTimeMillis());
+		//zombie.update(System.currentTimeMillis());
+		//tank.update(System.currentTimeMillis());
+		zekrom.update(System.currentTimeMillis());
+	}
+
+	/**
+	 * This method draws the fps text into the view
+	 * 	
+	 * @param canvas	The <code>Canvas</code> provides methods for drawing into a view
+	 * @param fps		A string indicating the frames per second update rate of the view
+	 */
+	private void displayFps(Canvas canvas, String fps) {
+		if (canvas != null && fps != null) {
+			Paint paint = new Paint();
+			paint.setARGB(255, 255, 255, 255);
+			canvas.drawText(fps, this.getWidth() - 50, 20, paint);
+		}
+	}
+	
+	int r=10;
+	private void animateNinja(int py, int px) throws InterruptedException
+	{
+		ninja.setFrameNr(8);
+		if (r==10)
+		{
+			ninja.startFrame(40);
+			if (ninja.count() >= 50)
+			{
+				ninja.counterReset();
+				r = random.nextInt(3);
+			}
+		}
+		if (r==11)
+		{
+			
+			ninja.startFrame(0);
+			
+			if (ninja.count() >= 50)
+			{
+				ninja.setY(random.nextInt(py-ninja.getSpriteHeight()-1));
+				ninja.setX(random.nextInt(px-ninja.getSpriteWidth()-1));
+				ninja.counterReset();
+				r=10;
+			}
+		}
+		if(ninja.getX()<=0)			//bound check left
+		{
+			ninja.setX(1);
+			r=11;
+		}
+		if(ninja.getY()<=0)			//bound check up
+		{
+			ninja.setY(1);
+			r=11;
+		}
+		if(ninja.getX()>=(px-ninja.getSpriteWidth())) 		//bound check right
+		{
+			ninja.setX(px-ninja.getSpriteWidth()-1);
+			r=11;
+		}
+		if(ninja.getY()>=py-ninja.getSpriteHeight())		//bound check down
+		{
+			ninja.setY(py-ninja.getSpriteHeight()-1);
+			r=11;
+		}
+		if (r==0)		//move left
+		{
+			ninja.startFrame(16);
+			ninja.setX(ninja.getX()-6);
+		}
+		if (r==1)		//move up
+		{
+			ninja.startFrame(32);
+			ninja.setY(ninja.getY()-6);
+		}
+		if (r==2)		//move right
+		{
+			ninja.startFrame(24);
+			ninja.setX(ninja.getX()+6);
+		}
+		if (r==3)		//move down
+		{
+			ninja.startFrame(8);
+			ninja.setY(ninja.getY()+6);
+		}
+	}
+	
+	int z=2;
+	private void animateZekrom(int py,int px)
+	{
+		if(zekrom.getX()<=0)			//bound check left
+		{
+			zekrom.setX(1);
+			z=1;
+		}
+		if(zekrom.getY()<=0)			//bound check up
+		{
+			zekrom.setY(1);
+			z=2;
+		}
+		if(zekrom.getX()>=(px-zekrom.getSpriteWidth())) 		//bound check right
+		{
+			zekrom.setX(px-zekrom.getSpriteWidth()-1);
+			z=3;
+		}
+		if(zekrom.getY()>=py-zekrom.getSpriteHeight())		//bound check down
+		{
+			zekrom.setY(py-zekrom.getSpriteHeight()-1);
+			z=0;
+		}
+		if (z==0)		//move left
+		{
+			zekrom.setX(zekrom.getX()-5);
+		}
+		if (z==1)		//move up
+		{
+			zekrom.setY(zekrom.getY()-5);
+		}
+		if (z==2)		//move right
+		{
+			zekrom.setX(zekrom.getX()+5);
+		}
+		if (z==3)		//move down
+		{
+			zekrom.setY(zekrom.getY()+5);
+		}
+	}
+}

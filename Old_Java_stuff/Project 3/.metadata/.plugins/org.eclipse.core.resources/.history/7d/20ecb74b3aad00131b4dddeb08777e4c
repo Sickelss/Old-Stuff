@@ -1,0 +1,188 @@
+/*
+ * Project 3 - Flood Fill
+ * CS 1181 Section 90 - distance learning
+ * 
+ * Seth Sickels
+ * 
+ */
+
+
+import java.io.*;
+import java.util.Scanner;
+
+public class Main {
+	
+	int row;
+	int col;
+	int data[][] = new int[row][col];
+	int regionCount = 1;
+	
+	/*
+	 * Method: loadFile
+	 * inputs: f (string)
+	 * outputs: none
+	 * purpose: Loads properly formatted data from a file into a 2d array.
+	 * exception: If the file is not found or not formatted properly, will throw an exception.
+	 */
+	public void loadFile(String f) throws FileNotFoundException
+	{
+		
+		File file = new File (f);
+		Scanner sc = new Scanner(file);
+		row = sc.nextInt();
+		col = sc.nextInt();
+		data = new int [row][col];
+		for (int r = 0; r < row; ++r)
+		{
+			for (int c = 0; c < col; ++c )
+			{
+				data[r][c] = sc.nextInt();
+			}
+		}
+		sc.close();
+		//System.out.println (row + " " + col);
+		
+	}
+	
+	/*
+	 * 
+	 * 
+	 */
+	public void invertArray()
+	{
+		//first thing, change all things not 0 to -1 in the array because we need those other numbers.
+		for (int r = 0; r < row; ++r)
+		{
+			for (int c = 0; c < col; ++c)
+			{
+				if (data[r][c] != 0) { data[r][c] = -1; }
+				//System.out.print(data[r][c] + " ");
+			}
+			//System.out.println (" ");
+		}
+	}
+	
+	public void flood(int r, int c)
+	{
+		if ( r > 0 && c > 0 && data[r-1][c-1] == -1 ) // up left
+		{
+			data[r-1][c-1] = regionCount;
+			flood(r-1, c-1);
+		}
+		
+		if ( r > 0 && data[r-1][c] == -1 ) //up
+		{
+			data[r-1][c] = regionCount;
+			flood(r-1, c);
+		}
+		
+		if ( r > 0 && c < col-1 && data[r-1][c+1] == -1) // up right
+		{
+			data[r-1][c+1] = regionCount;
+			flood(r-1, c+1);
+		}
+		
+		if ( c > 0 && data[r][c-1] == -1 ) // left
+		{
+			data[r][c-1] = regionCount;
+			flood(r, c-1);
+		}
+		
+		if (c < col-1 && data[r][c+1] == -1 ) //right
+		{
+			data[r][c+1] = regionCount;
+			flood(r, c+1);
+		}
+		
+		if ( r < row-1 && c > 0 && data[r+1][c-1] == -1 ) //down left
+		{
+			data[r+1][c-1] = regionCount;
+			flood(r+1, c-1);
+		}
+		
+		if (r < row-1 && data[r+1][c] == -1 ) //down
+		{
+			data[r+1][c] = regionCount;
+			flood(r+1, c);
+		}
+		
+		if (r < row-1 && c < col-1 && data[r+1][c+1] == -1 ) //down right
+		{
+			data[r+1][c+1] = regionCount;
+			flood(r+1, c+1);
+		}
+		
+	}
+	
+	public void findRegions()
+	{
+		
+		//then we can start actually finding regions
+		for (int r = 0; r < row; ++r)
+		{
+			for (int c = 0; c < col; ++c)
+			{
+				if (data[r][c] == -1) 
+				{
+					data[r][c] = regionCount;
+					flood(r, c);
+					regionCount++;
+				}
+			}
+		}
+	}
+	
+	public void outArray()
+	{
+		for (int r = 0; r < row; ++r)
+		{
+			for (int c = 0; c < col; ++c)
+			{
+				System.out.print(data[r][c] + " ");
+			}
+			System.out.println(" ");
+		}
+	}
+	
+	
+	public void saveFile(String outFile) throws IOException
+	{
+		Writer writer = new FileWriter (outFile);
+		String newLine = System.getProperty("line.separator");
+		
+		for (int r = 0; r < row; ++r)
+		{
+			for (int c = 0; c < col; ++c)
+			{
+				writer.write(data[r][c] + " ");
+			}
+			writer.write(newLine);
+		}
+		writer.close();
+		
+	}
+	
+	
+	public static void main(String[] args) throws IOException 
+	{
+		
+		Main obj = new Main();
+		Scanner input = new Scanner(System.in);
+		System.out.print("Input the filename for your data: ");
+		String fileIn  = input.nextLine();
+		System.out.println();
+		System.out.print("Input the filename to save the file: ");
+		String fileOut = input.nextLine();
+		System.out.println();
+		//obj.loadFile("testData.txt");
+		obj.loadFile(fileIn);
+		obj.invertArray();
+		obj.findRegions();
+		//obj.outArray();
+		//obj.saveFile("output.txt");
+		obj.saveFile(fileOut);
+		input.close();
+		
+	}
+
+}

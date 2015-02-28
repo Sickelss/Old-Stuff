@@ -1,0 +1,18 @@
+C:\Users\Seth\AppData\Local\Temporary Projects\Text Editor\bin\Debug\Text Editor.exe
+C:\Users\Seth\AppData\Local\Temporary Projects\Text Editor\bin\Debug\Text Editor.pdb
+C:\Users\Seth\AppData\Local\Temporary Projects\Text Editor\bin\Debug\Text Editor.xml
+C:\Users\Seth\AppData\Local\Temporary Projects\Text Editor\obj\x86\Debug\Text_Editor.Form1.resources
+C:\Users\Seth\AppData\Local\Temporary Projects\Text Editor\obj\x86\Debug\Text_Editor.Resources.resources
+C:\Users\Seth\AppData\Local\Temporary Projects\Text Editor\obj\x86\Debug\Text Editor.vbproj.GenerateResource.Cache
+C:\Users\Seth\AppData\Local\Temporary Projects\Text Editor\obj\x86\Debug\Text Editor.exe
+C:\Users\Seth\AppData\Local\Temporary Projects\Text Editor\obj\x86\Debug\Text Editor.xml
+C:\Users\Seth\AppData\Local\Temporary Projects\Text Editor\obj\x86\Debug\Text Editor.pdb
+C:\Users\Seth\Documents\Visual Studio 2010\Projects\Text Editor\Text Editor\obj\x86\Debug\Text Editor.exe
+C:\Users\Seth\Documents\Visual Studio 2010\Projects\Text Editor\Text Editor\obj\x86\Debug\Text Editor.xml
+C:\Users\Seth\Documents\Visual Studio 2010\Projects\Text Editor\Text Editor\obj\x86\Debug\Text Editor.pdb
+C:\Users\Seth\Documents\Visual Studio 2010\Projects\Text Editor\Text Editor\bin\Debug\Text Editor.exe
+C:\Users\Seth\Documents\Visual Studio 2010\Projects\Text Editor\Text Editor\bin\Debug\Text Editor.pdb
+C:\Users\Seth\Documents\Visual Studio 2010\Projects\Text Editor\Text Editor\bin\Debug\Text Editor.xml
+C:\Users\Seth\Documents\Visual Studio 2010\Projects\Text Editor\Text Editor\obj\x86\Debug\Text_Editor.Form1.resources
+C:\Users\Seth\Documents\Visual Studio 2010\Projects\Text Editor\Text Editor\obj\x86\Debug\Text_Editor.Resources.resources
+C:\Users\Seth\Documents\Visual Studio 2010\Projects\Text Editor\Text Editor\obj\x86\Debug\Text Editor.vbproj.GenerateResource.Cache
